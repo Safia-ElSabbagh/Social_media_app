@@ -5,6 +5,10 @@ public class Post {
     private String content;
     private LocalDateTime timeStamp;
 
+    // Default constructor
+    public Post() {
+    }
+
     // Constructor
     public Post(int postId, int userId, String content, LocalDateTime timeStamp) {
         this.postId = postId;

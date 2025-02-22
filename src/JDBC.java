@@ -5,13 +5,32 @@ import java.util.List;
 
 public class JDBC {
 
-    private Connection connect() throws SQLException {
+    private static Connection connect() throws SQLException {
         return DriverManager.getConnection(
                 "jdbc:mysql://127.0.0.1:3306/social_media",
                 "root",
                 "fatom-14102017"
         );
     }
+
+    public static int getUserId(String userName) {
+        String sql = "SELECT user_id FROM users WHERE username = ?";
+
+        try (Connection conn = connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userName);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt("user_id"); // Return the found userId
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; // User not found
+    }
+
 
     public boolean registerUser(User user) {
         String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
@@ -51,7 +70,7 @@ public class JDBC {
     }
 
     public boolean addPost(Post post) {
-        String sql = "INSERT INTO posts (userId, content) VALUES (?, ?)";
+        String sql = "INSERT INTO posts (user_id, content) VALUES (?, ?)";
 
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -70,7 +89,7 @@ public class JDBC {
 
 
     public List<Post> getPostsByUser(int userId) {
-        String sql = "SELECT * FROM posts WHERE userId = ? ORDER BY timeStamp DESC"; // Sorting by latest timestamp
+        String sql = "SELECT * FROM posts WHERE user_id = ? ORDER BY timeStamp DESC"; // Sorting by latest timestamp
         List<Post> posts = new ArrayList<>();
 
         try (Connection conn = connect();
@@ -80,9 +99,10 @@ public class JDBC {
             ResultSet resultSet = pstmt.executeQuery();
 
             while (resultSet.next()) {
-                int postId = resultSet.getInt("postId");
+                int postId = resultSet.getInt("post_id");
                 String content = resultSet.getString("content");
                 LocalDateTime timeStamp = resultSet.getTimestamp("timeStamp").toLocalDateTime(); // Convert SQL timestamp to Java LocalDateTime
+                System.out.println("📝 " + content + " 📅 [" + timeStamp + "]");
 
                 Post post = new Post(postId, userId, content, timeStamp);
                 posts.add(post);
@@ -96,25 +116,8 @@ public class JDBC {
     }
 
 
-    public boolean deletePost(int postId) {
-        String sql = "DELETE FROM posts WHERE postId =?";
-
-        try (Connection conn = connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setInt(1, postId);
-
-            int rowsAffected = pstmt.executeUpdate(); // FIXED: use executeUpdate()
-            return rowsAffected > 0;
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     public boolean followUser(int followerId, int followingId) {
-        String sql = "INSERT INTO followers (followerId, followingId) VALUES (?, ?)";
+        String sql = "INSERT INTO followers (follower_id, following_id) VALUES (?, ?)";
 
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -132,7 +135,7 @@ public class JDBC {
     }
 
     public boolean unfollowUser(int followerId, int followingId) {
-        String sql = "DELETE FROM followers WHERE followerId=? AND followingId=?";
+        String sql = "DELETE FROM followers WHERE follower_id=? AND following_id=?";
 
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

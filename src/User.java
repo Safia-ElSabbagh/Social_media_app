@@ -1,5 +1,3 @@
-import java.util.Scanner;
-
 public class User {
     private static int idCounter = 1; // Static counter for unique IDs
     private int userId;
