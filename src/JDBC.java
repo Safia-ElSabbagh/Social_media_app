@@ -9,7 +9,7 @@ public class JDBC {
         return DriverManager.getConnection(
                 "jdbc:mysql://127.0.0.1:3306/social_media",
                 "root",
-                "fatom-14102017"
+                "********"
         );
     }
 
